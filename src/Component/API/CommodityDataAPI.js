@@ -1,10 +1,9 @@
 import axios from 'axios';
 
-const ActivateAPI = async () =>{
-
+const CommodityDataApi = async ({state,district,market,commodity}) =>{
     var config = {
         method: 'get',
-        url: 'https://mandi-market.glitch.me/activate',
+        url: `https://mandi-market.glitch.me/search/${state}/${district}/${market}/${commodity}/data`,
         headers: { }
       };
       let returndata;
@@ -18,4 +17,4 @@ const ActivateAPI = async () =>{
       //console.log(returndata);
       return returndata;
 }
-export default ActivateAPI;
+export default CommodityDataApi;

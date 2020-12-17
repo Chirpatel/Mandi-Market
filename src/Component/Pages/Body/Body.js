@@ -11,7 +11,7 @@ optioal remove bug for variety being empty
 
 
 */
-
+import Chart from '../Charts/Chart'
 
 import './Body.css'
 
@@ -19,6 +19,7 @@ import StateAPI from '../../API/StateAPI'
 import DistrictApi from '../../API/DistrictApi'
 import MarketApi from '../../API/MarketAPI'
 import CommodityApi from '../../API/CommodityAPI'
+import CommodityDataApi from '../../API/CommodityDataAPI'
 import VarietyApi from '../../API/VarietyAPI'
 import VarietyDataApi from '../../API/VarietyDataAPI'
 
@@ -140,6 +141,26 @@ function Body() {
 
     /* End Commodity */
 
+    /* Commodity Data */
+
+    const [data,setData] = useState({})
+
+    useEffect(()=>{
+        const call = async ()=>{
+            var data = await CommodityDataApi({state:currentState,district:currentDistrict,market:currentMarket,commodity:currentCommodity});
+            //console.log("Variety Data : ", data)
+            if(data.data !==undefined){
+                setData(data.data);
+            }
+            
+        }
+        if(isCommodityData && Object.keys(data).length===0){
+            call();
+        }
+    })
+
+    /* End Commodity Data */
+
     /* Variety */
 
     const [varieties,setVarieties] = useState([])
@@ -171,7 +192,6 @@ function Body() {
 
     /* Variety Data */
 
-    const [data,setData] = useState({})
 
     useEffect(()=>{
         const call = async ()=>{
@@ -182,7 +202,7 @@ function Body() {
             }
             setVarietyChange(false);
         }
-        if(isVarietyChange && currentVariety!=="Default"){
+        if(!isCommodityData && isVarietyChange && currentVariety!=="Default"){
             call();
         }
     })
@@ -253,10 +273,39 @@ function Body() {
     /*onChange Variety Data */
     const varietyDatadefault = ()=>{
         setData({});
+        setSubmit(false)
     }
     /*onChange Variety Data End */
 
     /*End OnChange */
+
+    /* Submit */
+    const [isSubmitted,setSubmit] = useState(false);
+    const [isCommodityData,setCommodityData] = useState(false)
+    const handleSubmit = ()=>{
+        if(currentState==="Default"){
+            alert("Select State");
+        }else if(currentDistrict==="Default"){
+            alert("Select District");
+        }else if(currentMarket==="Default"){
+            alert("Select Market");
+        }else if(currentCommodity==="Default"){
+            alert("Select Commodity");
+        }else{
+            if(currentVariety==="Default"){
+
+                setCommodityData(true);
+            }else{
+                setCommodityData(false);
+            }
+            setSubmit(true);
+        }
+        
+    }
+    /*End Submit */
+
+
+
     return (
         <div className={"body"}>
             <div className={"body-input"}>
@@ -307,21 +356,33 @@ function Body() {
                         }
                     </select>
                 </div>
+                <div className="body-input-button">
+                    <button onClick={handleSubmit}><span>Submit</span></button>
+                </div>
             </div>
             <div className={"body-output"}>
-                {data &&
-                    Object.keys(data).map((date,i)=>{
-                        return( 
-                            <div key={i}>
-                                Date: {date}
-                                { Object.keys(data[date]).map((value,j)=>{
-                                    return <p key={j}>{value}: {data[date][value]}</p>
-                                })
-                                }
-                            </div>)
-                    })
-
+            {isCommodityData && Object.keys(data).length>0 && isSubmitted &&
+                <div className="body-output-chart-container">
+                    {Object.keys(data).map((variety,i)=>{
+                        return <div key={i} className="body-output-chart">
+                            <h2>{currentCommodity}</h2>
+                            <h5>{variety}</h5>
+                            <Chart data={data[variety]}/>
+                        </div>
+                        
+                    })}
+                </div>
+                    
                 }
+                {!isCommodityData && Object.keys(data).length>0 && data && isSubmitted &&
+                    <div className="body-output-chart">
+                        <h2>{currentCommodity}</h2>
+                        <h5>{currentVariety}</h5>
+                        <Chart data={data}/>
+                    </div>
+                }
+
+
             </div>
         </div>
     )
